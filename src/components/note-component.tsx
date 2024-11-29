@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { NotesGrid } from "@/components/notes-grid";
 import { type Note, type Tag } from "@/types/note";
 import { api } from "@/lib/api";
+import { Loader2 } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 // Example data
 // const initialNotes: Note[] = [
@@ -109,6 +111,10 @@ import { api } from "@/lib/api";
 // ];
 
 export default function NotesComponent() {
+  const location = useLocation();
+  const isPrivate = location.pathname === "/private-notes";
+  const apiEndpoint = isPrivate ? "/api-private" : "/api";
+
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
@@ -120,7 +126,8 @@ export default function NotesComponent() {
 
   const loadNotes = async () => {
     try {
-      const fetchedNotes = await api.getNotes();
+      const fetchedNotes = await api.getNotes(apiEndpoint);
+      console.log("fetchedNotes", fetchedNotes);
       setNotes(fetchedNotes);
     } catch (error) {
       console.error("Failed to load notes:", error);
@@ -130,13 +137,17 @@ export default function NotesComponent() {
   };
 
   const loadTags = async () => {
-    const fetchedTags = await api.getTags();
+    const fetchedTags = await api.getTags(apiEndpoint);
     setAvailableTags(fetchedTags);
   };
 
   const handleUpdateNote = async (id: string, updates: Partial<Note>) => {
     try {
-      const updatedNote = await api.updateNote(id, updates);
+      const updatedData = {
+        ...updates,
+        tags: updates.tags || []
+      };
+      const updatedNote = await api.updateNote(id, updatedData, apiEndpoint);
       setNotes(notes.map((note) => (note.id === id ? updatedNote : note)));
     } catch (error) {
       console.error("Failed to update note:", error);
@@ -145,7 +156,7 @@ export default function NotesComponent() {
 
   const handleDeleteNote = async (id: string) => {
     try {
-      await api.deleteNote(id);
+      await api.deleteNote(id, apiEndpoint);
       setNotes(notes.filter((note) => note.id !== id));
     } catch (error) {
       console.error("Failed to delete note:", error);
@@ -154,16 +165,26 @@ export default function NotesComponent() {
 
   const handleGenerateSummary = async (id: string) => {
     try {
-      const updatedNote = await api.generateSummary(id);
+      const updatedNote = await api.generateSummary(id, apiEndpoint);
       setNotes(notes.map((note) => (note.id === id ? updatedNote : note)));
     } catch (error) {
       console.error("Failed to generate summary:", error);
     }
   };
 
+  const handleGenerateActionPlan = async () => {
+    try {
+      const actionPlan = await api.generateActionPlanForAllNotes(apiEndpoint);
+      return actionPlan;
+    } catch (error) {
+      console.error("Failed to generate action plan:", error);
+      return "Failed to generate action plan. Please try again.";
+    }
+  };
+
   const handleAddNote = async (noteData: Omit<Note, "id" | "createdAt">) => {
     try {
-      await api.createNote(noteData);
+      await api.createNote(noteData, apiEndpoint);
       await loadNotes();
     } catch (error) {
       console.error("Failed to create note:", error);
@@ -171,7 +192,11 @@ export default function NotesComponent() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex h-[50vh] w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-white" />
+      </div>
+    );
   }
 
   return (
@@ -181,6 +206,7 @@ export default function NotesComponent() {
         onUpdateNote={handleUpdateNote}
         onDeleteNote={handleDeleteNote}
         onGenerateSummary={handleGenerateSummary}
+        onGenerateActionPlan={handleGenerateActionPlan}
         onAddNote={handleAddNote}
         availableTags={availableTags}
       />

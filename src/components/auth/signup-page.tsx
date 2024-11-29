@@ -15,6 +15,8 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { authService } from "./auth.service";
+import { useToast } from "@/hooks/use-toast";
 
 export function SignupPage() {
   const navigate = useNavigate();
@@ -25,13 +27,39 @@ export function SignupPage() {
     confirmPassword: "",
     acceptTerms: false,
   });
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
+
+    try {
+      await authService.signup(formData.email, formData.password);
+      toast({
+        title: "Success",
+        description: "Account created successfully",
+      });
+      navigate("/auth/login");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to create account",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,7 +84,7 @@ export function SignupPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
+          className="w-full max-w-md pt-20"
         >
           <Card className="border-white/10 bg-black/50 backdrop-blur-xl">
             <CardHeader>

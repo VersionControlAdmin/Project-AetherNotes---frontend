@@ -14,19 +14,39 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
+import { authService } from "./auth.service";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/components/auth/useAuth";
 
 export function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsLoading(false);
+
+    try {
+      const response = await authService.login(email, password);
+      useAuth.getState().setToken(response.token, email);
+      toast({
+        title: "Success",
+        description: "Logged in successfully",
+        variant: "default",
+      });
+      navigate("/");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to login",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

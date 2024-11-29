@@ -37,11 +37,17 @@ export function NoteAdder({ onAddNote, availableTags }: NoteAdderProps) {
     content: "",
     tags: [] as Tag[],
   });
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleSubmit = async () => {
-    await onAddNote(newNote);
-    setNewNote({ title: "", content: "", tags: [] });
-    setIsOpen(false);
+    setIsLoading(true);
+    try {
+      await onAddNote(newNote);
+      setNewNote({ title: "", content: "", tags: [] });
+      setIsOpen(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -112,8 +118,13 @@ export function NoteAdder({ onAddNote, availableTags }: NoteAdderProps) {
                   ))}
                   <Select
                     onValueChange={(tagId) => {
-                      const selectedTag = availableTags.find((t) => t.id === tagId);
-                      if (selectedTag && !newNote.tags?.some((t) => t.id === tagId)) {
+                      const selectedTag = availableTags.find(
+                        (t) => t.id === tagId
+                      );
+                      if (
+                        selectedTag &&
+                        !newNote.tags?.some((t) => t.id === tagId)
+                      ) {
                         setNewNote({
                           ...newNote,
                           tags: [...(newNote.tags || []), selectedTag],
@@ -145,7 +156,16 @@ export function NoteAdder({ onAddNote, availableTags }: NoteAdderProps) {
               >
                 Cancel
               </Button>
-              <Button onClick={handleSubmit}>Add Note</Button>
+              <Button onClick={handleSubmit} disabled={isLoading}>
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-white" />
+                    Saving...
+                  </div>
+                ) : (
+                  "Add Note"
+                )}
+              </Button>
             </div>
           </div>
         </DialogContent>

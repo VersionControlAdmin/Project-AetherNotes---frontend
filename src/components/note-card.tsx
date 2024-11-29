@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ActionPlanPopup } from "@/components/action-plan-popup";
 
 interface NoteCardProps {
   note: Note;
@@ -51,20 +52,26 @@ export function NoteCard({
   const [isOpen, setIsOpen] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(isNewNoteTemplate);
   const [isGeneratingSummary, setIsGeneratingSummary] = React.useState(false);
+  const [actionPlan, setActionPlan] = React.useState<string | null>(null);
   const [editedNote, setEditedNote] = React.useState(note);
+  const [isSaving, setIsSaving] = React.useState(false);
 
   const handleSave = async () => {
-    if (isNewNoteTemplate) {
-      // Remove the isNew flag before saving
-      const { isNew, ...noteWithoutIsNew } = editedNote;
-      await onUpdate(note.id, {
-        ...noteWithoutIsNew,
-        createdAt: new Date().toISOString(),
-      });
-    } else {
-      await onUpdate(note.id, editedNote);
+    setIsSaving(true);
+    try {
+      if (isNewNoteTemplate) {
+        const { isNew, ...noteWithoutIsNew } = editedNote;
+        await onUpdate(note.id, {
+          ...noteWithoutIsNew,
+          createdAt: new Date().toISOString(),
+        });
+      } else {
+        await onUpdate(note.id, editedNote);
+      }
+      setIsEditing(false);
+    } finally {
+      setIsSaving(false);
     }
-    setIsEditing(false);
   };
 
   const handleGenerateSummary = async () => {
@@ -255,7 +262,16 @@ export function NoteCard({
               <div className="flex gap-2">
                 {isEditing ? (
                   <>
-                    <Button onClick={handleSave}>Save</Button>
+                    <Button onClick={handleSave} disabled={isSaving}>
+                      {isSaving ? (
+                        <div className="flex items-center gap-2">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-white" />
+                          Saving...
+                        </div>
+                      ) : (
+                        "Save"
+                      )}
+                    </Button>
                     <Button
                       variant="outline"
                       onClick={() => {
@@ -265,6 +281,7 @@ export function NoteCard({
                           setIsOpen(false);
                         }
                       }}
+                      disabled={isSaving}
                     >
                       Cancel
                     </Button>
@@ -272,21 +289,19 @@ export function NoteCard({
                 ) : (
                   <>
                     <Button onClick={() => setIsEditing(true)}>Edit</Button>
-                    {!note.summary && (
-                      <Button
-                        variant="outline"
-                        className="gap-2"
-                        onClick={handleGenerateSummary}
-                        disabled={isGeneratingSummary}
-                      >
-                        {isGeneratingSummary ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Wand2 className="h-4 w-4" />
-                        )}
-                        Generate Summary
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline"
+                      className="gap-2"
+                      onClick={handleGenerateSummary}
+                      disabled={isGeneratingSummary}
+                    >
+                      {isGeneratingSummary ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Wand2 className="h-4 w-4" />
+                      )}
+                      {note.summary ? "Regenerate Summary" : "Generate Summary"}
+                    </Button>
                   </>
                 )}
               </div>
@@ -306,6 +321,12 @@ export function NoteCard({
           </div>
         </DialogContent>
       </Dialog>
+
+      <ActionPlanPopup
+        isOpen={!!actionPlan}
+        onClose={() => setActionPlan(null)}
+        actionPlan={actionPlan}
+      />
     </>
   );
 }
