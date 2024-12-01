@@ -6,7 +6,7 @@ import NotesComponent from "@/components/note-component";
 
 const HomePage = () => {
   return (
-    <div className="px-32">
+    <div className="lg:px-32 px-16">
       <HeroSection />
       <NotesComponent />
     </div>

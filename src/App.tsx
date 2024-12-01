@@ -9,7 +9,7 @@ import Section404Page from "./pages/404Page";
 
 function App() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-full overflow-x-hidden">
       <RootLayout>
         <Routes>
           <Route path="/" element={<HomePage />} />

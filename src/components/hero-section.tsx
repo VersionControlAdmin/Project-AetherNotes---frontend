@@ -18,7 +18,7 @@ export function HeroSection() {
       className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-4 text-center"
     >
       {/* Main Heading Group */}
-      <div className="max-w-4xl space-y-4 flex flex-col items-center pt-24 pb-16">
+      <div className="max-w-4xl space-y-4 flex flex-col items-center pt-12 pb-8 xl:pt-24 xl:pb-16">
         <motion.div
           className="space-y-1 text-white text-base text-muted-foreground
           sm:text-lg pt-4 pb-4 flex items-center gap-2"
@@ -27,9 +27,9 @@ export function HeroSection() {
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           MVP developed within 48 hours as part of
-          <a 
-            href="https://ironhack.com" 
-            target="_blank" 
+          <a
+            href="https://ironhack.com"
+            target="_blank"
             rel="noopener noreferrer"
           >
             <img
