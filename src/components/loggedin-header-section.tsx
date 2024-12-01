@@ -1,5 +1,5 @@
 import { LockIcon } from "lucide-react";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 
 export function LoggedInHeaderSection() {
   return (
