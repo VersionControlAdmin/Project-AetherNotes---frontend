@@ -74,8 +74,8 @@ export function Footer() {
             </div>
           ))}
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-gray-100">Connect</h4>
-            <div className="flex space-x-4">
+            <h4 className="text-sm font-semibold text-gray-100 text-center">Connect</h4>
+            <div className="flex space-x-4 justify-center">
               {socialLinks.map(({ Icon, href, label }) => (
                 <a
                   key={label}
@@ -115,7 +115,7 @@ export function Footer() {
             ))}
           </Accordion>
           <div className="mt-6 space-y-3">
-            <h4 className="text-sm font-semibold text-gray-100">Connect</h4>
+            <h4 className="text-sm font-semibold text-gray-100 text-center">Connect</h4>
             <div className="flex space-x-4 justify-center">
               {socialLinks.map(({ Icon, href, label }) => (
                 <a
